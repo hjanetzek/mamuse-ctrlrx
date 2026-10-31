@@ -1,0 +1,2 @@
+# muse uses LF everywhere. muse/sync-upstream.sh merges with -X renormalize, so the CRLF of upstream merges cleanly
+* text=auto eol=lf
