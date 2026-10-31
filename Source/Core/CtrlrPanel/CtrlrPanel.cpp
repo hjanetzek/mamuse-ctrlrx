@@ -1779,9 +1779,6 @@ void CtrlrPanel::sendMidi (CtrlrMidiMessage &m, double millisecondCounterToStart
 	if (isMidiOutPaused())
 		return;
 
-	if (!outputDevicePtr)
-		return;
-	
 	const double sendTime = globalMidiDelay + millisecondCounterToStartAt;
 	const bool latchEnabled = (bool)m.getProperty(Ids::midiMessageLatchAndStream);
 	
@@ -1827,12 +1824,15 @@ void CtrlrPanel::sendMidi (CtrlrMidiMessage &m, double millisecondCounterToStart
 		}
 		
 		nrpnHeaderLatched = true;
-		outputDevicePtr->sendMidiBuffer(filtered, sendTime);
+		// without an output device the messages still go to the host
+		if (outputDevicePtr)
+			outputDevicePtr->sendMidiBuffer(filtered, sendTime);
 		queueMessagesForHostOutput(filtered);
 	}
 	else
 	{
-		outputDevicePtr->sendMidiBuffer(m.getMidiBuffer(), sendTime);
+		if (outputDevicePtr)
+			outputDevicePtr->sendMidiBuffer(m.getMidiBuffer(), sendTime);
 		queueMessageForHostOutput(m);
 	}
 }
