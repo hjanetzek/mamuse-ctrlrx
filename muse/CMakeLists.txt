@@ -37,7 +37,7 @@ if(NOT (UNIX AND NOT APPLE))
 	list(FILTER CTRLR_SOURCES EXCLUDE REGEX "/CtrlrLinux\\.cpp$")
 endif()
 
-# the resources (fonts, icons, Lua) as namespace CtrlrBinaryData, muse/include/JuceHeader.h makes it BinaryData
+# the resources (fonts, icons, Lua) as namespace CtrlrBinaryData, muse/include-lib/BinaryData.h makes it BinaryData
 file(GLOB_RECURSE CTRLR_RESOURCES CONFIGURE_DEPENDS "${CTRLR_SOURCE}/Resources/*")
 list(FILTER CTRLR_RESOURCES EXCLUDE REGEX "/\\.DS_Store$")
 juce_add_binary_data(ctrlrBinaryData HEADER_NAME CtrlrBinaryData.h NAMESPACE CtrlrBinaryData SOURCES ${CTRLR_RESOURCES})
@@ -91,7 +91,7 @@ target_compile_definitions(ctrlrLib PUBLIC
 file(READ "${CTRLR_ROOT}/VERSION" CTRLR_VERSION)
 string(STRIP "${CTRLR_VERSION}" CTRLR_VERSION)
 # for muse/include/JuceHeader.h
-target_compile_definitions(ctrlrLib PRIVATE CTRLR_VERSION_STRING="${CTRLR_VERSION}")
+target_compile_definitions(ctrlrLib PUBLIC CTRLR_VERSION_STRING="${CTRLR_VERSION}")
 
 if(UNIX)
 	# CtrlrX is built with all warnings off
@@ -99,6 +99,8 @@ if(UNIX)
 endif()
 
 target_link_libraries(ctrlrLib PRIVATE ctrlrBinaryData)
+target_include_directories(ctrlrLib PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include-lib")
+target_compile_definitions(ctrlrLib PRIVATE CTRLR_LIB_BUILD=1)
 target_link_libraries(ctrlrLib PUBLIC PkgConfig::CTRLR_LUAJIT PkgConfig::CTRLR_LIBUSB Boost::headers)
 # the compile definitions of the JUCE modules, and their code after this library on the link line
 target_link_libraries(ctrlrLib PRIVATE $<COMPILE_ONLY:${CTRLR_JUCE_MODULES_TARGET}>)

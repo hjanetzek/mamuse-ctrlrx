@@ -700,10 +700,12 @@ void CtrlrProcessor::openFileFromCli(const File &file)
 }
 
 //==============================================================================
-// This creates new instances of the plugin.
+// This creates new instances of the plugin. Embedded in another plugin (CTRLR_EMBEDDED), that one has the entry point
 
+#ifndef CTRLR_EMBEDDED
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     _DBG("createPluginFilter");
     return new CtrlrProcessor();
 }
+#endif
