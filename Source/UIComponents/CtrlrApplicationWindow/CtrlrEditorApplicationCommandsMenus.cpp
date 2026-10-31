@@ -77,6 +77,25 @@ StringArray CtrlrEditor::getMenuBarNames()
 {
 	StringArray n;
 
+#ifdef CTRLR_EMBEDDED
+	// embedded in another plugin, there is no MIDI to configure, see getMenuForIndex()
+	if (!isRestricted())
+	{
+		const char* const names[] = { "File", "Edit", "View", "Panel", "Programs", "Tools", "Help", nullptr };
+		return (StringArray (names));
+	}
+	else
+	{
+		if (hideProgramsMenu)
+		{
+			const char* const names[] = { "File", "Edit", "View", "Tools", "Help", nullptr };
+			return (StringArray (names));
+		}
+		const char* const names[] = { "File", "Edit", "View", "Programs", "Tools", "Help", nullptr };
+		return (StringArray (names));
+	}
+#endif
+
 	if (!isRestricted())
 	{
 		const char* const names[] = { "File", "Edit", "View", "Panel", "MIDI", "Programs", "Tools", "Help", nullptr };
@@ -101,6 +120,12 @@ StringArray CtrlrEditor::getMenuBarNames()
 
 PopupMenu CtrlrEditor::getMenuForIndex(int topLevelMenuIndex, const String &menuName)
 {
+#ifdef CTRLR_EMBEDDED
+	// the menus after the missing MIDI menu move one up
+	if (topLevelMenuIndex >= (isRestricted() ? (int)MenuRestrictedMidi : (int)MenuMidi))
+		topLevelMenuIndex++;
+#endif
+
 	ApplicationCommandManager* commandManager = &(owner.getCommandManager());
 	PopupMenu menu;
 
@@ -280,7 +305,11 @@ void CtrlrEditor::menuItemSelected(int menuItemID, int topLevelMenuIndex)
 	/* Some items are not commands, they need to be invoked manualy here */
 	//_DBG("CtrlrEditor::menuItemSelected topLevelMenuIndex="+STR(topLevelMenuIndex)+" menuItemID="+STR(menuItemID)+" MENU_OFFSET_MIDI="+STR(MENU_OFFSET_MIDI));
 
+#ifdef CTRLR_EMBEDDED
+	if (false)
+#else
 	if (topLevelMenuIndex == 3 || topLevelMenuIndex == 4)
+#endif
 	{	// This is MIDI menu (3 if Panel menu is hidden, 4 otherwise)
 		if (menuItemID >= MENU_OFFSET_MIDI_DEV_IN && menuItemID < MENU_OFFSET_CUSTOM_REQUESTS)
 		{

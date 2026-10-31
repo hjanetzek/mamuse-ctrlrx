@@ -628,6 +628,12 @@ void CtrlrPanel::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChange
 	{
 		return;
 	}
+#ifdef CTRLR_EMBEDDED
+	else if (property == Ids::panelMidiInputDevice || property == Ids::panelMidiOutputDevice || property == Ids::panelMidiControllerDevice)
+	{
+		// embedded in another plugin, there are no devices to open
+	}
+#endif
 	else if (property == Ids::panelMidiInputDevice)
 	{
 		if (getProperty(property).toString() == "" || getProperty(property).toString() == COMBO_ITEM_NONE)
@@ -1441,6 +1447,22 @@ void CtrlrPanel::handleAsyncUpdate()
 
 bool CtrlrPanel::getMidiOptionBool(const CtrlrPanelMidiOption optionToCheck)
 {
+#ifdef CTRLR_EMBEDDED
+	// embedded in another plugin, the panels talk to that plugin only, whatever they were saved with
+	switch (optionToCheck)
+	{
+		case panelMidiInputFromHost:
+		case panelMidiOutputToHost:
+			return (true);
+		case panelMidiInputFromHostCompare:
+		case panelMidiRealtimeIgnore:
+		case panelMidiControllerToLua:
+			break;
+		default:
+			return (false);
+	}
+#endif
+
 	const uint32 opt = midiOptions.get();
 
 	return ((opt & optionToCheck) != 0);

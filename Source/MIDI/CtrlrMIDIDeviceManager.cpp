@@ -275,6 +275,11 @@ void CtrlrMIDIDeviceManager::refreshDevices()
 	inDevs.clear();
 	outDevs.clear();
 
+#ifdef CTRLR_EMBEDDED
+	// embedded in another plugin, its MIDI is the only one, the panels can't open devices
+	return;
+#endif
+
 	juce::Array<juce::MidiDeviceInfo> in		= MidiInput::getAvailableDevices();
 	juce::Array<juce::MidiDeviceInfo> out		= MidiOutput::getAvailableDevices();
 
