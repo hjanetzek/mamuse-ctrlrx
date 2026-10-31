@@ -62,7 +62,12 @@ void CtrlrDocumentPanel::activeDocumentChanged()
     
     if (getCurrentTabbedComponent()) {
         
+#ifdef CTRLR_EMBEDDED
+        // embedded in another plugin, the editor shows the panel only
+        if (true)
+#else
         if (owner.getInstanceMode() == InstanceSingleRestricted) // Added v5.6.31. Hides tabs on exported restricted instances
+#endif
         {
             getCurrentTabbedComponent()->setTabBarDepth(0); // Tab height for horizontal bar
             getCurrentTabbedComponent()->getTabbedButtonBar().setMinimumTabScaleFactor(0); // Min tab width ratio

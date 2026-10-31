@@ -25,6 +25,9 @@ CtrlrEditor::CtrlrEditor (CtrlrProcessor *_ownerFilter, CtrlrManager &_owner)
 
     menuBar = new MenuBarComponent(this); // Added v5.6.34
     addAndMakeVisible(menuBar); // Added v5.6.34
+#ifdef CTRLR_EMBEDDED
+    menuBar->setVisible(false); // embedded in another plugin, the editor shows the panel only
+#endif
 	
 	Rectangle<int> editorRect;
     // http://www.juce.com/forum/topic/applicationcommandmanager-menus-not-active-annoyance#new
@@ -45,6 +48,7 @@ CtrlrEditor::CtrlrEditor (CtrlrProcessor *_ownerFilter, CtrlrManager &_owner)
     
     addAndMakeVisible (&owner.getCtrlrDocumentPanel());
     
+#ifndef CTRLR_EMBEDDED // embedded in another plugin, the window around the editor is resizable
     if (!JUCEApplication::isStandaloneApp()) // If Ctrlr is !NOT run as a standalone app but as a plugin or shared lib
     {
         if (owner.getInstanceMode() != InstanceSingleRestricted) // is !NOT restricted instance of the plugin
@@ -55,6 +59,7 @@ CtrlrEditor::CtrlrEditor (CtrlrProcessor *_ownerFilter, CtrlrManager &_owner)
             resizer.toFront(true);
         }
     }
+#endif
     
     if (owner.getProperty (Ids::ctrlrEditorBounds).toString() != "") // ctrlrEditorBounds is Editor size. AAX Plugin crashes here, passes without it
     {
@@ -405,6 +410,11 @@ bool CtrlrEditor::isPanelActive(const bool checkRestrictedInstance)
 
 void CtrlrEditor::setMenuBarVisible(const bool shouldBeVisible)
 {
+#ifdef CTRLR_EMBEDDED
+	// embedded in another plugin, the editor shows the panel only
+	menuBar->setVisible (false);
+#else
 	menuBar->setVisible (shouldBeVisible);
+#endif
 	resized();
 }
