@@ -1,0 +1,20 @@
+# Paths (git pathspecs) of upstream CtrlrX that muse doesn't use. muse/sync-upstream.sh keeps them removed when merging upstream.
+# The plugins use gearmulator's JUCE and the system's boost, LuaJIT and libusb
+JUCE
+JuceLibraryCode
+Source/Misc/boost
+Source/Misc/libusb
+Source/Misc/luajit
+Source/Misc/lua
+cmake/luajit
+# packaging, documentation, tests and the build files of the CtrlrX application
+.github
+Packaging
+Doc
+Tests
+Ctrlr-Structure.png
+autobuild_*
+*.jucer
+# panel collections, added as submodules upstream
+Panels
+.gitmodules
