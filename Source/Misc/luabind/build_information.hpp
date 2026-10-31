@@ -48,6 +48,7 @@
 
 #undef LUABIND_DYNAMIC_LINK
 
-#define LUABIND_NO_SCOPED_ENUM 1
+// JUCE 7 has scoped enums, such as MessageBoxIconType
+#undef LUABIND_NO_SCOPED_ENUM
 #endif // INCLUDED_BuildInformation_hpp_GUID_90CCCE9E_4374_4090_36BA_3AA2C22271F7
 

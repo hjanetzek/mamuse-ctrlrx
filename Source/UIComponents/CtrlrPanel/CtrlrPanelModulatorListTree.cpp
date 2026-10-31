@@ -139,7 +139,11 @@ bool CtrlrModulatorTreeViewItem::canBeSelected () const
 	return (true);
 }
 
+#if JUCE_VERSION >= 0x60100
+std::unique_ptr<Component> CtrlrModulatorTreeViewItem::createItemComponent ()
+#else
 Component *CtrlrModulatorTreeViewItem::createItemComponent ()
+#endif
 {
 	CtrlrModulatorTreeLabel *l = new CtrlrModulatorTreeLabel(*this, itemToAttach);
 	l->addMouseListener (this, true);
@@ -147,7 +151,11 @@ Component *CtrlrModulatorTreeViewItem::createItemComponent ()
 
 	itemLabel = l;
 
+#if JUCE_VERSION >= 0x60100
+	return std::unique_ptr<Component> (l);
+#else
 	return (l);
+#endif
 }
 
 void CtrlrModulatorTreeViewItem::itemOpennessChanged (bool isNowOpen)

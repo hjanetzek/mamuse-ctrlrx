@@ -10,6 +10,7 @@ extern "C"
 }
 
 #include "JuceHeader.h"
+#include "CtrlrJuceCompat.h"
 
 #endif // !__OBJC__
 #endif // __cplusplus

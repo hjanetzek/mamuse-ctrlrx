@@ -24,6 +24,7 @@ void LAudioFile::wrapForLua(lua_State *L)
 			//.def("createWriterFor", &WavAudioFormat::createWriterFor)
 			.def("replaceMetadataInFile", &WavAudioFormat::replaceMetadataInFile)
 			.def("createBWAVMetadata", &WavAudioFormat::createBWAVMetadata)
+#if JUCE_USE_OGGVORBIS
 		,
 		class_<OggVorbisAudioFormat>("OggVorbisAudioFormat")
 			.def(constructor<>())
@@ -35,6 +36,8 @@ void LAudioFile::wrapForLua(lua_State *L)
 			.def("isCompressed", &OggVorbisAudioFormat::isCompressed)
 			.def("getQualityOptions", &OggVorbisAudioFormat::getQualityOptions)
 			.def("estimateOggFileQuality", &OggVorbisAudioFormat::estimateOggFileQuality)
+#endif
+#if JUCE_USE_FLAC
 		,
 		class_<FlacAudioFormat>("FlacAudioFormat")
 			.def(constructor<>())
@@ -45,7 +48,14 @@ void LAudioFile::wrapForLua(lua_State *L)
 			//.def("createWriterFor", &FlacAudioFormat::createWriterFor)
 			.def("isCompressed", &FlacAudioFormat::isCompressed)
 			.def("getQualityOptions", &FlacAudioFormat::getQualityOptions)
+#endif
 	];
+}
+
+// read returns whether it succeeded since JUCE 7
+static void audioFormatReaderRead (AudioFormatReader &reader, AudioSampleBuffer *buffer, int startSampleInDestBuffer, int numSamples, int64 readerStartSample, bool useReaderLeftChan, bool useReaderRightChan)
+{
+	reader.read (buffer, startSampleInDestBuffer, numSamples, readerStartSample, useReaderLeftChan, useReaderRightChan);
 }
 
 void LAudioFormat::wrapForLua (lua_State *L)
@@ -59,7 +69,7 @@ void LAudioFormat::wrapForLua (lua_State *L)
 		class_<AudioFormatReader>("AudioFormatReader")
 				.def("getFormatName", &AudioFormatReader::getFormatName)
 				.def("read", (bool (AudioFormatReader::*)(int *const *, int, int64, int, bool))&AudioFormatReader::read)
-				.def("read", (void (AudioFormatReader::*)(AudioSampleBuffer *, int, int, int64, bool, bool))&AudioFormatReader::read)
+				.def("read", &audioFormatReaderRead)
 				.def("readMaxLevels", (void (AudioFormatReader::*)(int64, int64, float&, float&, float&, float&))&AudioFormatReader::readMaxLevels)
 				.def("searchForLevel", &AudioFormatReader::searchForLevel)
 				.def_readonly("sampleRate", &AudioFormatReader::sampleRate)
@@ -198,7 +208,7 @@ void LAudioThumbnail::wrapForLua (lua_State *L)
 		class_<AudioThumbnail>("AudioThumbnail")
 			.def(constructor<int, AudioFormatManager &, AudioThumbnailCache &>())
 			.def("clear", &AudioThumbnail::clear)
-			.def("setSource", &AudioThumbnail::setSource)
+			.def("setSource", (bool (AudioThumbnail::*)(InputSource*))&AudioThumbnail::setSource)
 			.def("setReader", &AudioThumbnail::setReader)
 			.def("reset", &AudioThumbnail::reset)
 			.def("addBlock", &AudioThumbnail::addBlock)
@@ -217,6 +227,12 @@ void LAudioThumbnail::wrapForLua (lua_State *L)
 	];
 }
 
+// addEvent returns whether it succeeded since JUCE 7
+static void midiBufferAddEvent (MidiBuffer &buffer, const MidiMessage &midiMessage, int sampleNumber)
+{
+	buffer.addEvent (midiMessage, sampleNumber);
+}
+
 void LMidiBuffer::wrapForLua (lua_State *L)
 {
 	using namespace luabind;
@@ -231,7 +247,7 @@ void LMidiBuffer::wrapForLua (lua_State *L)
             .def("clear", (void (MidiBuffer::*)(int, int)) &MidiBuffer::clear)
             .def("isEmpty", &MidiBuffer::isEmpty)
             .def("getNumEvents", &MidiBuffer::getNumEvents)
-            .def("addEvent", (void (MidiBuffer::*)(const MidiMessage &, int)) &MidiBuffer::addEvent)
+            .def("addEvent", &midiBufferAddEvent)
             .def("addEvents", (void (MidiBuffer::*)(const MidiBuffer &, int, int, int)) &MidiBuffer::addEvents)
             .def("getFirstEventTime", &MidiBuffer::getFirstEventTime)
             .def("getLastEventTime", &MidiBuffer::getLastEventTime)
@@ -390,7 +406,7 @@ void LMidiMessage::wrapForLua (lua_State *L)
 					//def("midiMachineControlCommand", &MidiMessage::midiMachineControlCommand),
 					//def("midiMachineControlGoto", &MidiMessage::midiMachineControlGoto),
 					def("masterVolume", &MidiMessage::masterVolume),
-					def("createSysExMessage", &MidiMessage::createSysExMessage),
+					def("createSysExMessage", (MidiMessage (*)(const void*, int))&MidiMessage::createSysExMessage),
 					def("readVariableLengthVal", &MidiMessage::readVariableLengthVal),
 					def("getMessageLengthFromFirstByte", &MidiMessage::getMessageLengthFromFirstByte),
 					def("getMidiNoteName", &MidiMessage::getMidiNoteName),

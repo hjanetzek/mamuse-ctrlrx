@@ -45,6 +45,13 @@ bool CtrlrDocumentPanel::tryToCloseDocument (Component* component)
 	return (true);
 }
 
+#if JUCE_VERSION >= 0x060100
+void CtrlrDocumentPanel::tryToCloseDocumentAsync (Component* component, std::function<void (bool)> callback)
+{
+	callback (tryToCloseDocument (component));
+}
+#endif
+
 void CtrlrDocumentPanel::activeDocumentChanged()
 {
     CtrlrEditor *ed = dynamic_cast <CtrlrEditor*> (getParentComponent());

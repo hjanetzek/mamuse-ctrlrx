@@ -358,7 +358,7 @@ void LComponent::wrapForLua (lua_State *L)
 			.def("setInterceptsMouseClicks", &Component::setInterceptsMouseClicks)
 			.def("getInterceptsMouseClicks", &Component::getInterceptsMouseClicks)
 			.def("contains", (bool (Component::*)(const Point<int>))&Component::contains)
-			.def("reallyContains", &Component::reallyContains)
+			.def("reallyContains", (bool (Component::*)(Point<int>, bool))&Component::reallyContains)
 			.def("getComponentAt", (Component *(Component::*)(int,int))&Component::getComponentAt)
 			.def("getComponentAt", (Component *(Component::*)(const Point<int>))&Component::getComponentAt)
 			.def("repaint", (void (Component::*)(void))&Component::repaint)
@@ -385,7 +385,10 @@ void LComponent::wrapForLua (lua_State *L)
 			.def("grabKeyboardFocus", &Component::grabKeyboardFocus)
 			.def("hasKeyboardFocus", &Component::hasKeyboardFocus)
 			.def("moveKeyboardFocusToSibling", &Component::moveKeyboardFocusToSibling)
+#if JUCE_VERSION < 0x060100
+			// returns a std::unique_ptr since JUCE 6.1, and the traverser isn't bound anyway
 			.def("createFocusTraverser", &Component::createFocusTraverser)
+#endif
 			.def("getExplicitFocusOrder", &Component::getExplicitFocusOrder)
 			.def("setExplicitFocusOrder", &Component::setExplicitFocusOrder)
 			.def("setFocusContainer", &Component::setFocusContainer)
@@ -1311,6 +1314,12 @@ int LookAndFeelBase::getDefaultMenuBarHeight()
 	TRY_CALL_RET_NOP(getDefaultMenuBarHeight, int, 0);
 }
 
+#if JUCE_MAJOR_VERSION >= 7
+    #define CTRLR_DEFAULT_DROP_SHADOWER (LookAndFeel_V2::createDropShadowerForComponent(*component).release())
+#else
+    #define CTRLR_DEFAULT_DROP_SHADOWER (LookAndFeel_V2::createDropShadowerForComponent(component))
+#endif
+
 DropShadower* LookAndFeelBase::createDropShadowerForComponent(Component* component)
 {
 	using namespace luabind;
@@ -1329,17 +1338,17 @@ DropShadower* LookAndFeelBase::createDropShadowerForComponent(Component* compone
                 return (s);
             }
 
-            return (LookAndFeel_V2::createDropShadowerForComponent(component));
+            return CTRLR_DEFAULT_DROP_SHADOWER;
         }
         catch (luabind::error &e)
         {
             _WRN(object_cast <std::string> (object(luabind::from_stack(e.state(), -1))));
-            return (LookAndFeel_V2::createDropShadowerForComponent(component));
+            return CTRLR_DEFAULT_DROP_SHADOWER;
         }
     }
     else
     {
-        return (LookAndFeel_V2::createDropShadowerForComponent(component));
+        return CTRLR_DEFAULT_DROP_SHADOWER;
     }
 }
 
@@ -1760,7 +1769,7 @@ void LTextEditor::wrapForLua (lua_State *L)
 			.def("setHighlightedRegion", &TextEditor::setHighlightedRegion)
 			.def("getHighlightedRegion", &TextEditor::getHighlightedRegion)
 			.def("getHighlightedText", &TextEditor::getHighlightedText)
-			.def("getTextIndexAt", &TextEditor::getTextIndexAt)
+			.def("getTextIndexAt", (int (TextEditor::*)(int, int) const)&TextEditor::getTextIndexAt)
 			.def("getTotalNumChars", &TextEditor::getTotalNumChars)
 			.def("getTextWidth", &TextEditor::getTextWidth)
 			.def("setIndents", &TextEditor::setIndents)

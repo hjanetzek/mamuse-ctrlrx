@@ -12,6 +12,9 @@ class CtrlrDocumentPanel  : public MultiDocumentPanel, public Button::Listener
 		CtrlrDocumentPanel (CtrlrManager &_owner);
 		~CtrlrDocumentPanel();
 		bool tryToCloseDocument (Component* component);
+#if JUCE_VERSION >= 0x060100
+		void tryToCloseDocumentAsync (Component* component, std::function<void (bool)> callback) override;
+#endif
 		void activeDocumentChanged();
 		void setEditor (CtrlrEditor *_editorToSet);
 		void resized();

@@ -26,6 +26,17 @@ void LAsyncUpdater::wrapForLua (lua_State *L)
 	];
 }
 
+// setBit returns the BigInteger since JUCE 7
+static void bigIntegerSetBit (BigInteger &bigInteger, int bitNumber)
+{
+	bigInteger.setBit (bitNumber);
+}
+
+static void bigIntegerSetBitTo (BigInteger &bigInteger, int bitNumber, bool shouldBeSet)
+{
+	bigInteger.setBit (bitNumber, shouldBeSet);
+}
+
 void LBigInteger::wrapForLua (lua_State *L)
 {
 	using namespace luabind;
@@ -53,8 +64,8 @@ void LBigInteger::wrapForLua (lua_State *L)
 				.def("toInteger", &BigInteger::toInteger)
 				.def("clear", &BigInteger::clear)
 				.def("clearBit", &BigInteger::clearBit)
-				.def("setBit", (void (BigInteger::*)(int))&BigInteger::setBit)
-				.def("setBit", (void (BigInteger::*)(int,bool))&BigInteger::setBit)
+				.def("setBit", &bigIntegerSetBit)
+				.def("setBit", &bigIntegerSetBitTo)
 				.def("setRange", &BigInteger::setRange)
 				.def("insertBit", &BigInteger::insertBit)
 				.def("getBitRange", &BigInteger::getBitRange)
@@ -542,7 +553,7 @@ void LThread::startThread()
 
 void LThread::startThread(int priority)
 {
-	Thread::startThread(priority);
+	Thread::startThread(ctrlrThreadPriority(priority));
 }
 
 bool LThread::isThreadRunning()
@@ -567,7 +578,7 @@ bool LThread::waitForThreadToExit(int timeOutMilliseconds) const
 
 bool LThread::setPriority(int priority)
 {
-	return (Thread::setPriority(priority));
+	return (Thread::setPriority(ctrlrThreadPriority(priority)));
 }
 
 void LThread::setAffinityMask(int affMask)

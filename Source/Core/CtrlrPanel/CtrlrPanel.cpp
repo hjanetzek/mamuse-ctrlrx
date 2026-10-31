@@ -220,8 +220,8 @@ CtrlrPanel::CtrlrPanel(CtrlrManager &_owner, const String &panelName, const int 
     owner.addChangeListener (this);
     midiMessageCollector.reset (SAMPLERATE);
 
-    midiInputThread.startThread(5);
-    midiControllerInputThread.startThread(5);
+    midiInputThread.startThread(ctrlrThreadPriority(5));
+    midiControllerInputThread.startThread(ctrlrThreadPriority(5));
 }
 
 CtrlrPanel::~CtrlrPanel()

@@ -37,6 +37,28 @@ struct signature_aux<
 template <class F>
 struct signature_aux<const F>: signature_aux<F> {};
 
+// Since C++17 noexcept is part of the function type, which boost::function_types doesn't know. The signature
+// doesn't need it
+#if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+template <class R, class... A>
+struct signature_aux<R (*)(A...) noexcept>
+{
+    typedef R (*type)(A...);
+};
+
+template <class R, class C, class... A>
+struct signature_aux<R (C::*)(A...) noexcept>
+{
+    typedef R (C::*type)(A...);
+};
+
+template <class R, class C, class... A>
+struct signature_aux<R (C::*)(A...) const noexcept>
+{
+    typedef R (C::*type)(A...) const;
+};
+#endif
+
 template <typename F>
 struct is_function:
     fty::is_callable_builtin<typename signature_aux<F>::type>

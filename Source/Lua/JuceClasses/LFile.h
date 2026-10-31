@@ -3,15 +3,14 @@
 
 #include "LMemoryBlock.h"
 
-class LFile : public File
+// File is final since JUCE 6.1, so the Lua versions of its methods take the File as their first argument
+class LFile
 {
 	public:
-		LFile(const String &_path) : File(_path) {}
-		LFile(const File &other) : File(other) {}
-		void findChildFiles (luabind::object const& table, int whatToLookFor, bool searchRecursively, const String wildcardPattern) const;
-		double getSize()
+		static void findChildFiles (const File &file, luabind::object const& table, int whatToLookFor, bool searchRecursively, const String wildcardPattern);
+		static double getSize(const File &file)
 		{
-			return ((double)File::getSize());
+			return ((double)file.getSize());
 		}
 
 		static File getSpecialLocation(const File::SpecialLocationType type)
@@ -19,22 +18,22 @@ class LFile : public File
 			return (File::getSpecialLocation(type));
 		}
 
-		bool replaceWithData (const LMemoryBlock &dataToWrite)
+		static bool replaceWithData (const File &file, const LMemoryBlock &dataToWrite)
 		{
-			return (File::replaceWithData (dataToWrite.getData(), (size_t)dataToWrite.getSize()));
+			return (file.replaceWithData (dataToWrite.getData(), (size_t)dataToWrite.getSize()));
 		}
 
-        bool appendData (const LMemoryBlock &dataToAppend)
-        {
-            return (File::appendData (dataToAppend.getData(), (size_t)dataToAppend.getSize()));
-        }
+		static bool appendData (const File &file, const LMemoryBlock &dataToAppend)
+		{
+			return (file.appendData (dataToAppend.getData(), (size_t)dataToAppend.getSize()));
+		}
 
 		static const String descriptionOfSizeInBytes(const double fileSize)
 		{
 			return (File::descriptionOfSizeInBytes ((juce::int64)fileSize));
 		}
 
-		bool isValid();
+		static bool isValid(const File &file);
 		static void wrapForLua (lua_State *L);
 };
 
